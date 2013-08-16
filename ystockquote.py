@@ -13,8 +13,7 @@
 #  Requires: Python 2.7/3.2+
 
 
-__version__ = '0.2.2'
-
+__version__ = '0.2.4'
 
 try:
     # py3
@@ -149,7 +148,8 @@ def get_historical_prices(symbol, start_date, end_date):
     Get historical prices for the given ticker symbol.
     Date format is 'YYYY-MM-DD'
 
-    Returns a nested list (first item is list of column headers).
+    Returns a nested dictionary (dict of dicts).
+    outer dict keys are dates ('YYYY-MM-DD')
     """
     params = urlencode({
         's': symbol,
@@ -166,5 +166,17 @@ def get_historical_prices(symbol, start_date, end_date):
     req = Request(url)
     resp = urlopen(req)
     content = str(resp.read().decode('utf-8').strip())
-    days = content.splitlines()
-    return [day.split(',') for day in days]
+    daily_data = content.splitlines()
+    hist_dict = dict()
+    keys = daily_data[0].split(',')
+    for day in daily_data[1:]:
+        day_data = day.split(',')
+        date = day_data[0]
+        hist_dict[date] = \
+            {keys[1]: day_data[1],
+             keys[2]: day_data[2],
+             keys[3]: day_data[3],
+             keys[4]: day_data[4],
+             keys[5]: day_data[5],
+             keys[6]: day_data[6]}
+    return hist_dict
